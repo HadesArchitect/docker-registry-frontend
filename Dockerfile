@@ -8,9 +8,7 @@ USER root
 # Setup environment variables
 ############################################################
 
-ENV WWW_DIR /var/www/html
-ENV SOURCE_DIR /tmp/source
-ENV START_SCRIPT /root/start-apache.sh
+ENV WWW_DIR=/var/www/html SOURCE_DIR=/tmp/source START_SCRIPT=/root/start-apache.sh
 
 RUN mkdir -pv $WWW_DIR
 
@@ -71,8 +69,9 @@ RUN apt-get -y update && \
       npm \
       --no-install-recommends && \
     a2enmod proxy && \
-    a2enmod proxy_http && \
-    cd $SOURCE_DIR && \
+    a2enmod proxy_http
+
+RUN cd $SOURCE_DIR && \
     export GITREF=$(cat .git/HEAD | cut -d" " -f2) && \
     export GITSHA1=$(cat .git/$GITREF) && \
     echo "{\"git\": {\"sha1\": \"$GITSHA1\", \"ref\": \"$GITREF\"}}" > $WWW_DIR/app-version.json && \
@@ -101,12 +100,7 @@ RUN a2ensite docker-site.conf
 ADD start-apache.sh $START_SCRIPT
 RUN chmod +x $START_SCRIPT
 
-ENV APACHE_RUN_USER www-data
-ENV APACHE_RUN_GROUP www-data
-ENV APACHE_LOG_DIR /var/log/apache2
-
-# Let people know how this was built
-ADD Dockerfile /root/Dockerfile
+ENV APACHE_RUN_USER=www-data APACHE_RUN_GROUP=www-data APACHE_LOG_DIR=/var/log/apache2
 
 # Exposed ports
 EXPOSE 80 443
